@@ -4,3 +4,5 @@ build*/
 *.pro.user
 a.out
 .qmake.stash
+templates*/
+examples*/
