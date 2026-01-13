@@ -34,7 +34,7 @@ bool Cli::exec_prompt()
 
     // If the command needs a specified amount of parameters and the amount is
     // not correct, print an error and stop
-    if (command.params_n != ANY_N_PARAMS and
+    if (command.params_n != ANY_N_PARAMS &&
         params.size() != static_cast<unsigned long>(command.params_n))
     {
         print_error(Error::WRONG_N_PARAMS);

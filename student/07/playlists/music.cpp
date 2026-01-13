@@ -16,13 +16,13 @@ Music::Music(){
 bool Music::read_from_file(std::string file_name){
 
     std::ifstream file_object(file_name);
-    if (not file_object){
+    if (!file_object){
         std::cout << "Error: could not open file." << std::endl;
         return false;
     }
     std::string line = "";
 
-    std::vector<Song> all_songs;
+    std::vector<std::shared_ptr<Song>> all_songs;
 
     while (getline(file_object, line)){
 
@@ -49,19 +49,20 @@ bool Music::read_from_file(std::string file_name){
             std::string artist = parts.at(1);
             std::string title = parts.at(2);
             int duration = stoi(parts.at(3)); // convert song duration from string to int
-            Song new_song{id, artist, title, duration};
+            
+            auto new_song = std::make_shared<Song>(Song{id, artist, title, duration});
 
             all_songs.push_back(new_song); // add song to vector of songs
         }
 
         else if(parts.size() == 3){ // when parts.size() is 3, then it's a playlist
-            Playlist playlist;
+            auto playlist = std::make_shared<Playlist>();
             std::string playlist_name = parts.at(0);
             std::string user = parts.at(1);
             std::vector<std::string> song_ids = Utilities::split(parts.at(2), '|', true);
 
-            playlist.set_title(playlist_name);
-            playlist.set_user(user);
+            playlist->set_title(playlist_name);
+            playlist->set_user(user);
 
             // check if any of the strings in song_ids are empty
             for (const auto& id : song_ids){
@@ -70,9 +71,9 @@ bool Music::read_from_file(std::string file_name){
                     return false;
                 }
                 // check that all songs listed in file line are found in the program
-                auto it = std::find_if(all_songs.begin(), all_songs.end(),[&](const Song& s){return s.id == id; });
+                auto it = std::find_if(all_songs.begin(), all_songs.end(),[&](const std::shared_ptr<Song>& s){return s->id == id; });
                 if (it != all_songs.end()){
-                    playlist.add_song(*it); // make function for this
+                    playlist->add_song(*it); // make function for this
                 }
                 else{
                     std::cout << "Error: song not found." << std::endl;
@@ -92,29 +93,29 @@ bool Music::read_from_file(std::string file_name){
 }
 
 void Music::playlists_command(){
-    std::vector<Playlist> sorted_playlists = playlists_;
+    std::vector<std::shared_ptr<Playlist>> sorted_playlists = playlists_;
     std::sort(sorted_playlists.begin(), sorted_playlists.end(),
-              [](const Playlist& p1, const Playlist& p2){return p1.get_name() < p2.get_name();});
+              [](const std::shared_ptr<Playlist>& p1, const std::shared_ptr<Playlist>& p2){return p1->get_name() < p2->get_name();});
 
     for (const auto& playlist : sorted_playlists){
-        playlist.print_playlist();
+        playlist->print_playlist();
     }
 
 }
 
 void Music::playlist_command(std::string name){
-    Playlist* p1 = nullptr;
+    std::shared_ptr<Playlist> p1 = nullptr;
 
     auto it = std::find_if(playlists_.begin(), playlists_.end(),
-                           [&] (const Playlist& p){return p.get_name() == name;});
+                           [&] (const std::shared_ptr<Playlist>& p){return p->get_name() == name;});
     if(it!=playlists_.end()){
-        p1 = &(*it); //store pointer
+        p1 = *it; //store pointer
     }
     else{
         std::cout << "Error: playlist not found." << std::endl;
         return;
     }
-    std::vector<Song> sorted_songs = p1->get_songs();
+    std::vector<std::shared_ptr<Song>> sorted_songs = p1->get_songs();
 
     std::cout << p1->get_name() << ", created by " << p1->get_user() << std::endl;
     int running_number = 1;
@@ -130,12 +131,12 @@ void Music::playlist_command(std::string name){
 void Music::songs_command(){
     // keep track of songs that have seen to avoid printing multiples
     std::set<std::string> seen_ids;
-    std::vector<Song> all_songs;
+    std::vector<std::shared_ptr<Song>> all_songs;
 
     // collect all songs from all playlists
     for (const auto& playlist : playlists_){
-        for(const auto& song : playlist.get_songs()){
-            if(seen_ids.insert(song.id).second){
+        for(const auto& song : playlist->get_songs()){
+            if(seen_ids.insert(song->id).second){
                 all_songs.push_back(song); // collect each song only once
             }
         }
@@ -143,7 +144,7 @@ void Music::songs_command(){
 
     // sort songs according with compare_songs
     std::sort(all_songs.begin(), all_songs.end(),
-              [](const Song& song1, const Song& song2){return Utilities::compare_songs(song1, song2);});
+              [](const std::shared_ptr<Song>& song1, const std::shared_ptr<Song>& song2){return Utilities::compare_songs(song1, song2);});
 
     for(const auto& song : all_songs){
         Utilities::print_song(song);
@@ -155,9 +156,9 @@ void Music::favorites_command(std::string& user) {
 
     // Count all songs by this user, grouped by artist
     for (const auto& playlist : playlists_) {
-        if (playlist.get_user() == user) {
-            for (const auto& song : playlist.get_songs()) {
-                artist_count[song.artist]++;
+        if (playlist->get_user() == user) {
+            for (const auto& song : playlist->get_songs()) {
+                artist_count[song->artist]++;
             }
         }
     }
@@ -188,7 +189,7 @@ void Music::shuffle_command(std::string name, std::string seed){
     // check
 
     auto it = std::find_if(playlists_.begin(), playlists_.end(),
-                           [&](const Playlist& p){return p.get_name() == name ;});
+                           [&](const std::shared_ptr<Playlist>& p){return p->get_name() == name ;});
 
     if(it==playlists_.end()){
         std::cout << "Error: playlist not found." << std::endl;
@@ -200,14 +201,14 @@ void Music::shuffle_command(std::string name, std::string seed){
         return;
     }
     int seed_int = stoi(seed);
-    const Playlist& playlist = *it;
+    const std::shared_ptr<Playlist> playlist = *it;
 
-    std::vector<Song> shuffled = playlist.get_songs();
+    std::vector<std::shared_ptr<Song>> shuffled = playlist->get_songs();
 
     std::default_random_engine generator(seed_int);
     std::shuffle(shuffled.begin(), shuffled.end(), generator);
 
-    std::cout << playlist.get_name() << ", created by " << playlist.get_user() << std::endl;
+    std::cout << playlist->get_name() << ", created by " << playlist->get_user() << std::endl;
     int running_number = 1;
     for(const auto& song : shuffled){
         std::cout << "  " << running_number << ". ";
@@ -215,7 +216,7 @@ void Music::shuffle_command(std::string name, std::string seed){
         running_number++;
     }
 
-    std::cout << "Total duration " << Utilities::format_duration(playlist.playlist_duration()) << std::endl;
+    std::cout << "Total duration " << Utilities::format_duration(playlist->playlist_duration()) << std::endl;
 }
 
 

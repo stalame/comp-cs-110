@@ -1,0 +1,12 @@
+build*/
+*.exe
+*.o
+*.pro.user
+a.out
+.qmake.stash
+templates*/
+examples*/
+*.json
+*.pdb
+*.obj
+*.vscode

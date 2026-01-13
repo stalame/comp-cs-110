@@ -14,7 +14,7 @@ Playlist::Playlist():
 int Playlist::playlist_duration()const{
     int total_seconds = 0;
     for (const auto& song : songs_){
-        total_seconds += song.duration;
+        total_seconds += song->duration;
     }
 
     return total_seconds;
@@ -23,7 +23,7 @@ int Playlist::playlist_duration()const{
 // void Playlist::list_songs(const std::vector<Song>& playlist, Utilities::song_printer printer) const{
 // }
 
-void Playlist::add_song(const Song& s){
+void Playlist::add_song(const std::shared_ptr<Song>& s){
 
     songs_.push_back(s);
 }
@@ -36,7 +36,7 @@ std::string Playlist::get_user()const{
     return user_;
 }
 
-std::vector<Song> Playlist::get_songs()const{
+const std::vector<std::shared_ptr<Song>>& Playlist::get_songs()const{
     return songs_;
 }
 

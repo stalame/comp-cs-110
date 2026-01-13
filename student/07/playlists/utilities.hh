@@ -4,6 +4,7 @@
 #include "song.hh"
 #include <vector>
 #include <string>
+#include <memory>
 
 namespace Utilities {
 
@@ -16,11 +17,11 @@ std::vector<std::string> split(const std::string& str, char delim, bool keep_emp
 bool is_int(std::string str, bool allow_negative = false);
 
 // Function pointer for song printer
-using song_printer = void(*)(const Song&);
+using song_printer = void(*)(const std::shared_ptr<Song>&);
 
 // Prints input parameter song in correct output format
 // using function pointer song_printer
-void print_song(const Song& s);
+void print_song(const std::shared_ptr<Song>& s);
 
 // All durations for both playlists and songs are stored in program in seconds
 // Function changes duration to correct output format mins:secs
@@ -28,7 +29,7 @@ std::string format_duration(int total_seconds);
 
 // Helper function for class Music methods that require printing songs in alphabetical order
 // first based on band name and then based on song title
-bool compare_songs(const Song& a, const Song& b);
+bool compare_songs(const std::shared_ptr<Song>& a, const std::shared_ptr<Song> & b);
 
 }
 

@@ -18,7 +18,7 @@
 #include "utilities.hh"
 #include "playlist.hh"
 #include <string> 
-
+#include <memory>
 
 class Music
 {
@@ -71,7 +71,7 @@ public:
     void shuffle_command(std::string name, std::string seed);
 
 private:
-    std::vector<Playlist> playlists_;
+    std::vector<std::shared_ptr<Playlist>> playlists_;
 
 };
 

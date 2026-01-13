@@ -5,6 +5,7 @@
 #include <sstream>
 #include <iostream>
 #include <iomanip>
+#include <memory>
 
 using namespace std;
 
@@ -18,11 +19,11 @@ vector<string> split(const string& str, char delim, bool keep_empty)
     {
         if ( currentChar == '"' )
         {
-            insideQuotation = not insideQuotation;
+            insideQuotation = !insideQuotation;
         }
-        else if ( currentChar == delim and not insideQuotation)
+        else if ( currentChar == delim && !insideQuotation)
         {
-            if (keep_empty or result.back() != "") {
+            if (keep_empty || result.back() != "") {
                 result.push_back("");
             }
         }
@@ -31,7 +32,7 @@ vector<string> split(const string& str, char delim, bool keep_empty)
             result.back().push_back(currentChar);
         }
     }
-    if (!keep_empty and result.back() == "") {
+    if (!keep_empty && result.back() == "") {
         result.pop_back();
     }
     return result;
@@ -62,8 +63,8 @@ bool is_int(string str, bool allow_negative)
     return true;
 }
 
-void print_song(const Song& s){
-    cout << s.artist << " - " << s.title << " (" << format_duration(s.duration) << ")" << endl;
+void print_song(const shared_ptr<Song>& s){
+    cout << s->artist << " - " << s->title << " (" << format_duration(s->duration) << ")" << endl;
 }
 
 string format_duration(int total_seconds){
@@ -76,10 +77,10 @@ string format_duration(int total_seconds){
     return oss.str();
 }
 
-bool compare_songs(const Song& a, const Song& b){
-    if (a.artist != b.artist){
-        return a.artist < b.artist;
+bool compare_songs(const shared_ptr<Song>& a, const shared_ptr<Song>& b){
+    if (a->artist != b->artist){
+        return a->artist < b->artist;
     }
-    return a.title < b.title;
+    return a->title < b->title;
 }
 }

@@ -20,6 +20,7 @@
 #include "utilities.hh"
 #include <string>
 #include <vector>
+#include <memory>
 
 class Playlist
 {
@@ -33,7 +34,7 @@ public:
     int playlist_duration()const;
 
     // adds songs into std::vector<Song> songs
-    void add_song(const Song& s);
+    void add_song(const std::shared_ptr<Song>& s);
 
     // GETTERS
     // Retrieves the name of the playlist
@@ -43,7 +44,7 @@ public:
     std::string get_user() const;
 
     // Returns a vector std::vector<Song> of the songs in playlist
-    std::vector<Song> get_songs()const;
+    const std::vector<std::shared_ptr<Song>>& get_songs()const;
 
     //
 
@@ -65,7 +66,7 @@ public:
 private:
     std::string playlist_title_;
     std::string user_;
-    std::vector<Song> songs_;
+    std::vector<std::shared_ptr<Song>> songs_;
 };
 
 #endif // PLAYLIST_HH
